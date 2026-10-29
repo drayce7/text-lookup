@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Texts</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        h1 { margin-bottom: 30px; }
+        .admin-container {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 600px;
+        }
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+        label { font-size: 14px; color: #888; font-weight: bold; }
+        input {
+            padding: 12px;
+            font-size: 16px;
+            background: #111;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+        input:focus { border-color: #3b82f6; }
+        .btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: 0.2s;
+            margin-top: auto;
+        }
+        .btn-add { background-color: #10b981; }
+        .btn-add:hover { background-color: #059669; }
+        
+        .list-container {
+            margin-top: 30px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+        }
+        .list-item span { font-size: 16px; }
+        .list-item .number { color: #3b82f6; font-weight: bold; font-size: 18px; }
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .back-link {
+            margin-top: 30px;
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: #fff; }
+        .status-msg { margin-top: 15px; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Admin Dashboard</h1>
+
+    <div class="admin-container">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Text</label>
+                <input type="text" id="newText" placeholder="Enter text here...">
+            </div>
+            <div class="input-group" style="flex-grow: 0;">
+                <label>Number</label>
+                <input type="text" id="newNumber" placeholder="e.g. 45" style="width: 100px;">
+            </div>
+            <button class="btn btn-add" onclick="addNewText()">Add</button>
+        </div>
+        
+        <div class="status-msg" id="statusMsg"></div>
+
+        <div class="list-container" id="listContainer">
+            <!-- List items will appear here -->
+        </div>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to Lookup Page</a>
+
+    <script>
+        const newText = document.getElementById('newText');
+        const newNumber = document.getElementById('newNumber');
+        const listContainer = document.getElementById('listContainer');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function getDatabase() {
+            return JSON.parse(localStorage.getItem('text_database')) || {};
+        }
+
+        function saveDatabase(db) {
+            localStorage.setItem('text_database', JSON.stringify(db));
+        }
+
+        function showStatus(msg, isError = false) {
+            statusMsg.textContent = msg;
+            statusMsg.style.color = isError ? '#ef4444' : '#10b981';
+            statusMsg.style.display = 'block';
+            setTimeout(() => { statusMsg.style.display = 'none'; }, 3000);
+        }
+
+        function addNewText() {
+            const text = newText.value.trim();
+            const number = newNumber.value.trim();
+
+            if (!text || !number) {
+                showStatus("Please fill in both fields.", true);
+                return;
+            }
+
+            const db = getDatabase();
+            const lowerText = text.toLowerCase();
+
+            // Check if text already exists
+            if (db[lowerText]) {
+                showStatus("This text already exists! Delete it first to overwrite.", true);
+                return;
+            }
+
+            // Save to database
+            db[lowerText] = number;
+            saveDatabase(db);
+
+            newText.value = "";
+            newNumber.value = "";
+            showStatus("Successfully added!");
+            renderList();
+        }
+
+        function deleteText(key) {
+            if(confirm("Delete this entry?")) {
+                const db = getDatabase();
+                delete db[key];
+                saveDatabase(db);
+                renderList();
+            }
+        }
+
+        function renderList() {
+            listContainer.innerHTML = '';
+            const db = getDatabase();
+            
+            const keys = Object.keys(db);
+            if (keys.length === 0) {
+                listContainer.innerHTML = '<p style="color:#888; text-align:center;">No texts saved yet.</p>';
+                return;
+            }
+
+            keys.forEach(key => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <span>${key}</span>
+                    <span class="number">${db[key]}</span>
+                    <button class="btn-delete" onclick="deleteText('${key}')">Delete</button>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        // Initialize list on load
+        renderList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Number Lookup</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        label {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        input {
+            width: 250px;
+            padding: 15px;
+            font-size: 18px;
+            background: #111;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus {
+            border-color: #3b82f6;
+        }
+        .result-box {
+            width: 250px;
+            padding: 15px;
+            font-size: 18px;
+            background: #111;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #ccc;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .result-box.success {
+            border-color: #10b981;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        .result-box.error {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .admin-link {
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .admin-link:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="box">
+            <label>Enter Text</label>
+            <input type="text" id="textInput" placeholder="Type here..." autocomplete="off">
+        </div>
+        
+        <div class="box">
+            <label>Assigned Number</label>
+            <div class="result-box" id="resultBox">Waiting...</div>
+        </div>
+    </div>
+
+    <a href="admin.html" class="admin-link">Go to Admin Page ⚙️</a>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const resultBox = document.getElementById('resultBox');
+
+        // Load data from localStorage
+        function getDatabase() {
+            return JSON.parse(localStorage.getItem('text_database')) || {};
+        }
+
+        // Real-time lookup
+        textInput.addEventListener('input', function() {
+            const inputVal = textInput.value.trim().toLowerCase();
+            const database = getDatabase();
+
+            if (inputVal === "") {
+                resultBox.textContent = "Waiting...";
+                resultBox.className = "result-box";
+                return;
+            }
+
+            // Check if the text exists in the database (case-insensitive)
+            if (database[inputVal]) {
+                resultBox.textContent = database[inputVal];
+                resultBox.className = "result-box success";
+            } else {
+                resultBox.textContent = "Not Found";
+                resultBox.className = "result-box error";
+            }
+        });
+    </script>
+</body>
+</html>
